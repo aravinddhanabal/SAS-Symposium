@@ -1,0 +1,75 @@
+/*File type change code*/
+
+FILENAME REFFILE 'C:/Users/adhanab/Desktop/SAS_SYM/FATAL_ENCOUNTERS.xlsx';
+PROC IMPORT DATAFILE=REFFILE
+	DBMS=XLSX
+	OUT=ARAV.FE;
+	GETNAMES=YES;
+	SHEET="Form Responses";
+RUN;
+PROC CONTENTS DATA=ARAV.FE; RUN;
+%web_open_table(ARAV.FE);
+
+
+
+
+
+/*Table creation*/
+
+PROC SQL;
+   CREATE TABLE AR.FATAL_ENCOUNTERS_final(label="FATAL_ENCOUNTERS_final") AS 
+   SELECT t1.ID, 
+          t1.Name, 
+          t1.Age, 
+          t1.'Subject''s gender'n, 
+          t1.'Subject''s race'n, 
+          t1.'Date of injury resulting in deat'n, 
+          t1.'Location of injury (address)'n, 
+          t1.'Location of death (city)'n, 
+          t1.'Location of death (state)'n, 
+          t1.'Location of death (zip code)'n, 
+          t1.'Location of death (county)'n, 
+          t1.'Full Address'n, 
+          t1.Latitude, 
+          t1.Longitude, 
+          t1.'Agency(ies) involved in death'n, 
+          t1.'Cause of death'n, 
+          t1.'A brief description of the circu'n, 
+          t1.'Official disposition of death (j'n, 
+          t1.'Were police aware of symptoms of'n, 
+          t1.'Date&Description'n, 
+          t1.'Date (Year)'n
+      FROM EC100006.fatal_encounters t1;
+QUIT;
+
+
+
+
+
+/*Renaming the variables in fatal encounters dataset*/
+
+data fatal_encounters_renamed;
+set conf.fatal_encounters
+(rename=('Subject''s gender'n = Gender 
+'Subject''s race'n = Race 
+'Date of injury resulting in deat'n = Date_death
+'Location of injury (address)'n = Address_death
+'Location of death (city)'n = City 
+'Location of death (state)'n = State
+'Location of death (zip code)'n = Zipcode
+'Location of death (county)'n = County
+'Agency(ies) involved in death'n = Department_involved 
+'Cause of death'n = Cause_of_death
+'A brief description of the circu'n = Description
+'Official disposition of death (j'n = Disposition 
+'Were police aware of symptoms of'n = Police_awareness));
+RUN; 
+
+
+/* Seperating Gunshot Records*/
+data conf.Police_Shooting;
+set fatal_encounters_renamed (drop= 'Date&Description'n 'Date (Year)'n);
+where cause_of_death ="Gunshot";
+run;
+
+
